@@ -1,0 +1,27 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This repo contains easily accesible simulation code for calculating optimal thresholds in the MOB task. The code is written on a pipeline-driven library `targets`. All the top-level code is contained in the '_targets.R' file. One can adjust the simulation parameters by changing the parameters in the first target (see `_targets.R` file for details). Then, to run the pipeline:
+
+```{r}
+require(targets)
+tar_make()
+```
+
+To check the output, load or read the target elements. *E.g.*
+```{r}
+tar_load(sims)
+```
+will load the simulated threshold data frame, and
+```{r}
+tar_read(opt_plot)
+```
+will directly plot the thresholds.
+
+You can also visualize all the elements of the pipeline:
+```{r}
+tar_visnetwork()
+```
+
