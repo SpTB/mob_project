@@ -1,9 +1,9 @@
 ---
-title: "R Notebook"
+title: "Simulation Vignette"
 output: html_notebook
 ---
 
-This repo contains easily accesible simulation code for calculating optimal thresholds in the MOB task. The code is written on a pipeline-driven library `targets`. All the top-level code is contained in the '_targets.R' file. One can adjust the simulation parameters by changing the parameters in the first target (see `_targets.R` file for details). Then, to run the pipeline:
+This repo contains easily accessible simulation code for calculating optimal thresholds in the MOB task. The code is written on a pipeline-driven library `targets`. All the top-level code is contained in the '_targets.R' file. One can adjust the simulation parameters by changing the parameters in the first target (see `_targets.R` file for details). Then, to run the pipeline:
 
 ```{r}
 require(targets)

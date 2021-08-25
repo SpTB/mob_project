@@ -6,7 +6,7 @@ OptimalThresholdsGen <- function(l1, sigma, Threshold, alpha = 1, v, B=10, l2=1,
   dt = tt/n # time step
   numY = 2*perfBound/dy # number of values at which we calculate performance
   
-  riskyExpReward <-  matrix(rep(0,n*numY),ncol = numY*sigma) #Expected utility matrix for playing risky at the next step and then following the optimal 
+  riskyExpReward <-  matrix(rep(0,n*sigma*numY),ncol = numY*sigma) #Expected utility matrix for playing risky at the next step and then following the optimal 
   givingUpThreshold <-  rep(0,n) #Dropping out threshold, the observed performance at which the decision maker should drop out
   #Prepopulate g matrix. At the outset we only know the last values of the matrix.
   for (j in 1:numY*sigma){

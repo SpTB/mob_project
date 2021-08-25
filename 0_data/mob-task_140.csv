@@ -1,0 +1,2 @@
+run_id,condition,success,timeout,failed_images,failed_audio,failed_video,trial_type,trial_index,time_elapsed,internal_node_id,recorded_at,ip,user_agent,device,browser,browser_version,platform,platform_version
+140,1,true,false,"""","""","""",preload,0,544,0.0-0.0,"2021-07-06 09:48:11",93.105.177.91,"Mozilla/5.0 (Linux; Android 7.1.2; Redmi 4X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36",WebKit,Chrome,91.0.4472.120,AndroidOS,7.1.2

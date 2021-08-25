@@ -1,0 +1,68 @@
+##debug
+#func
+OptimalThresholdsGen <- function(l1, sigma, Threshold, alpha = 1, v, B=10, l2=1,   n=21, perfBound=150, dy=0.005, tt=21){ #
+  #ability qnd performance variance
+  dt = tt/n # time step
+  numY = 2*perfBound/dy # number of values at which we calculate performance
+  
+  riskyExpReward <-  matrix(rep(0,n*numY),ncol = numY) #Expected utility matrix for playing risky at the next step and then following the optimal 
+  givingUpThreshold <-  rep(0,n) #Dropping out threshold, the observed performance at which the decision maker should drop out
+  #Prepopulate g matrix. At the outset we only know the last values of the matrix.
+  for (j in 1:numY){
+    if (-perfBound+j*dy> Threshold){ #if the expected performance is greater than the threshold
+      riskyExpReward[n,j] <- B^alpha #than we set the expected utility to the bonus
+    }else{
+      riskyExpReward[n,j] <- 0}
+  }
+  givingUpThreshold[n] <- Threshold #At the last step, the drop out threshold is the actual performance threshold D
+  stepsOut <- ceiling(8*sigma*sqrt(dt)/dy) #Truncating a gaussian distribution at 4 times the standard deviation
+  #pre-compute variables
+  upperBound <- floor(Threshold/dy)*dy # for computational reasons we round down the thresholds to the nearest multiple of dy
+  upperCalcLim <- floor((upperBound+ perfBound)/dy) #rounded down index corresponding to the upper bound
+  y <- seq(-stepsOut*dy,stepsOut*dy,by = dy) # a discrete vector of possible performance change in one step
+  exponent <- -(y-l1*dt)^2/(2*sigma^2*dt) # the exponent of the normal distribution
+  ifelse(sigma>0, f <- 1/(sqrt(2*pi*dt)*sigma)*exp(exponent), f <- 1) # the density function of the normal distribution
+  # x <- as.matrix(t(seq(lowerBound+dy,upperBound+0.00001,by = dy))) # vector with all possible current performance levels, at step k.
+  #Backwards indunction
+  for (k in seq(n-1,1)){ #loop backwards through timesteps
+    print(k)
+    lowerBound <- givingUpThreshold[k+1]-stepsOut*dy #for computantional convenience, we consider values only four standard deviations away from the threshold. 
+    upperCalcLim <- floor((upperBound+ perfBound)/dy) #rounded down index corresponding to the upper bound
+    lowerCalcLim <- floor((lowerBound+ perfBound)/dy) #rounded down index corresponding to the lower bound
+    safeReturns <- (n-k-1)*l2*v*dt #returns after the k+1 step, if the safe strategy was used 
+    #Vectorized loop from lowerCalcLim:upperCalcLim
+    #riskyExpReward[k,(lowerCalcLim+1):upperCalcLim] <- mcmapply(seq((lowerCalcLim+1),upperCalcLim), FUN=function(j) sum(pmax(riskyExpReward[k+1,(j-stepsOut):(j+stepsOut)],safeReturns^alpha)*f)*dy, mc.preschedule=TRUE, mc.cores=no_cores)
+    
+    #Non vectorized solution
+    for (j in (lowerCalcLim+1):upperCalcLim){   
+      riskyExpReward[k,j]=sum(pmax(riskyExpReward[k+1,(j-stepsOut):(j+stepsOut)],safeReturns)*f)*dy
+    }
+    
+    riskyExpReward[k,(upperCalcLim+1):ncol(riskyExpReward)] <- (B+safeReturns)^alpha #if the threshold is already passed, we follow the safe strategy and we know the return
+    riskyExpReward[k,1:lowerCalcLim] <- safeReturns^alpha #for computational reasons, when performance is very low, we assume that the safe strategy is certainly  the best option
+    givingUpIndex <- which(riskyExpReward[k,] > ((n-k)*v)^alpha)[1] #the point where the risky strategy expected reward becomes larger than the safe one 
+    givingUpThreshold[k] <- -perfBound + dy*givingUpIndex + dy #convert the index to giving up threshold
+    givingUpThreshold[k] <- max(givingUpThreshold[k],-perfBound+dy+2*stepsOut*dy)
+  } #for computational reasons, we don't allow the threshold to be lower or too close to the lowest possible performance
+  
+  return(givingUpThreshold)
+}
+
+#works
+OptimalThresholdsGen(l1 = 5, sigma = 5, Threshold = 100, v = .25)
+
+#does not
+OptimalThresholdsGen(l1 = 5, sigma = 15, Threshold = 100, v = .25)
+
+###set internal pars
+l1 = 5
+sigma = 15 
+Threshold = 100 
+alpha = 1 
+v = .25 
+B=10 
+l2=1   
+n=21 
+perfBound=150 
+dy=0.005 
+tt=21

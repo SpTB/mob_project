@@ -1,4 +1,4 @@
-OptimalThresholdsGen <- function(l1, sigma, Threshold, alpha = 1, v, B=10, l2=1,   n=11, perfBound=150, dy=0.005, tt=11){ #
+OptimalThresholdsGen <- function(l1, sigma, Threshold, alpha = 1, v, B=10, l2=1,   n=21, perfBound=150, dy=0.005, tt=21){ #
   #ability qnd performance variance
   dt = tt/n # time step
   numY = 2*perfBound/dy # number of values at which we calculate performance
@@ -13,7 +13,7 @@ OptimalThresholdsGen <- function(l1, sigma, Threshold, alpha = 1, v, B=10, l2=1,
       riskyExpReward[n,j] <- 0}
   }
   givingUpThreshold[n] <- Threshold #At the last step, the drop out threshold is the actual performance threshold D
-  stepsOut <- ceiling(4*sigma*sqrt(dt)/dy) #Truncating a gaussian distribution at 4 times the standard deviation
+  stepsOut <- ceiling(8*sigma*sqrt(dt)/dy) #Truncating a gaussian distribution at 4 times the standard deviation
   #pre-compute variables
   upperBound <- floor(Threshold/dy)*dy # for computational reasons we round down the thresholds to the nearest multiple of dy
   upperCalcLim <- floor((upperBound+ perfBound)/dy) #rounded down index corresponding to the upper bound
@@ -23,7 +23,7 @@ OptimalThresholdsGen <- function(l1, sigma, Threshold, alpha = 1, v, B=10, l2=1,
   # x <- as.matrix(t(seq(lowerBound+dy,upperBound+0.00001,by = dy))) # vector with all possible current performance levels, at step k.
   #Backwards indunction
   for (k in seq(n-1,1)){ #loop backwards through timesteps
-   # print(k)
+    print(k)
     lowerBound <- givingUpThreshold[k+1]-stepsOut*dy #for computantional convenience, we consider values only four standard deviations away from the threshold. 
     upperCalcLim <- floor((upperBound+ perfBound)/dy) #rounded down index corresponding to the upper bound
     lowerCalcLim <- floor((lowerBound+ perfBound)/dy) #rounded down index corresponding to the lower bound
@@ -38,10 +38,11 @@ OptimalThresholdsGen <- function(l1, sigma, Threshold, alpha = 1, v, B=10, l2=1,
     
     riskyExpReward[k,(upperCalcLim+1):ncol(riskyExpReward)] <- (B+safeReturns)^alpha #if the threshold is already passed, we follow the safe strategy and we know the return
     riskyExpReward[k,1:lowerCalcLim] <- safeReturns^alpha #for computational reasons, when performance is very low, we assume that the safe strategy is certainly  the best option
-    givingUpIndex <- which(riskyExpReward[k,] > ((n-k)*l2*v*dt)^alpha)[1] #the point where the risky strategy expected reward becomes larger than the safe one 
+    givingUpIndex <- which(riskyExpReward[k,] > ((n-k)*v)^alpha)[1] #the point where the risky strategy expected reward becomes larger than the safe one 
     givingUpThreshold[k] <- -perfBound + dy*givingUpIndex + dy #convert the index to giving up threshold
-    givingUpThreshold[k] <- max(givingUpThreshold[k],-perfBound+dy+2*stepsOut*dy)} #for computational reasons, we don't allow the threshold to be lower or too close to the lowest possible performance
- 
+    givingUpThreshold[k] <- max(givingUpThreshold[k],-perfBound+dy+2*stepsOut*dy)
+    } #for computational reasons, we don't allow the threshold to be lower or too close to the lowest possible performance
+
    return(givingUpThreshold)
 }
 
@@ -56,7 +57,7 @@ OptimalThresholdsGen <- function(l1, sigma, Threshold, alpha = 1, v, B=10, l2=1,
 #   return (y)
 # }
 
-sim_wrap <- function (l1Vec, sigmaVec, thresholdVec, alphaVec, vVec, Bvec, l2=1, v=.25,  n=11, perfBound=150, dy=0.005, tt=11, ...) {
+sim_wrap <- function (l1Vec, sigmaVec, thresholdVec, alphaVec, vVec, Bvec, l2=1, v=.25,  n, perfBound=150, dy=0.005, tt=21, ...) {
   
   #l1 = NULL# thresholdVec <- c(90,100,110)
   # sigmaVec <- c(5,10)
@@ -106,6 +107,7 @@ sim_wrap <- function (l1Vec, sigmaVec, thresholdVec, alphaVec, vVec, Bvec, l2=1,
   return (optimalRiskyThresholds)
   
 }
+
 
 
 #write.csv(optimalRiskyThresholds, file = 'simData/optimalRiskyThresholdExperiment.csv')
